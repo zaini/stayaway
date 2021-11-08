@@ -11,6 +11,7 @@ from pygame.locals import (
 from player import Player
 from enemy import Enemy
 import random
+import math
 
 pygame.init()
 pygame.font.init()
@@ -44,10 +45,29 @@ kills = 0
 
 def is_enemy_shot(shot, enemy):
     global kills
+    KNOCKBACK_DISTANCE = 100
     if enemy.rect.colliderect(shot.rect):
         enemy.take_damage(shot.damage)
         if enemy.is_dead():
             kills += 1
+        else:
+            dy = enemy.rect.center[1] - shot.rect.center[1]
+            dx = enemy.rect.center[0] - shot.rect.center[0]
+            angle = math.atan2(dy, dx)
+            dx = math.cos(angle)
+            dy = math.cos(math.pi/2 - angle)
+
+            if dx >= 0:
+                dx = dx * KNOCKBACK_DISTANCE - enemy.rect.width // 2
+            else:
+                dx = dx * KNOCKBACK_DISTANCE + enemy.rect.width // 2
+
+            if dy >= 0:
+                dy = dy * KNOCKBACK_DISTANCE - enemy.rect.height // 2
+            else:
+                dy = dy * KNOCKBACK_DISTANCE + enemy.rect.height // 2
+
+            enemy.rect.move_ip(dx, dy)
         return True
     return False
 
@@ -72,12 +92,13 @@ while running:
         shot_group.update()
         if wave in waves:
             for n in range(waves[wave]):
-                enemy_group.add(random.choice([Enemy(player, 10, random.randint(10, SCREEN_HEIGHT)),
-                                               Enemy(player, SCREEN_WIDTH - 10,
-                                                     random.randint(10, SCREEN_HEIGHT)),
+                OFFSET = 100
+                enemy_group.add(random.choice([Enemy(player, OFFSET, random.randint(OFFSET, SCREEN_HEIGHT)),
+                                               Enemy(player, SCREEN_WIDTH - OFFSET,
+                                                     random.randint(OFFSET, SCREEN_HEIGHT)),
                                                Enemy(player, random.randint(
-                                                   10, SCREEN_WIDTH), 10),
-                                               Enemy(player, random.randint(10, SCREEN_WIDTH), SCREEN_HEIGHT - 10)]))
+                                                   OFFSET, SCREEN_WIDTH), OFFSET),
+                                               Enemy(player, random.randint(OFFSET, SCREEN_WIDTH), SCREEN_HEIGHT - OFFSET)]))
         enemy_group.update()
         wave += 1
 

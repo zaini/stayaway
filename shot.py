@@ -27,10 +27,12 @@ class Shot(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(pos_x, pos_y))
         self.direction = direction
         self.damage = DAMAGE
+        self.dx = math.cos(self.direction)
+        self.dy = math.cos(math.pi/2 - self.direction)
 
     def update(self):
-        self.rect.x -= SPEED * math.cos(self.direction)
-        self.rect.y -= SPEED * math.cos(math.pi/2 - self.direction)
+        self.rect.x -= SPEED * self.dx
+        self.rect.y -= SPEED * self.dy
         SCREEN_WIDTH, SCREEN_HEIGHT = pygame.display.get_surface().get_size()
 
         if self.rect.left < 0 - 100 or self.rect.right > SCREEN_WIDTH + 100 or self.rect.top <= 0 - 100 or self.rect.bottom >= SCREEN_HEIGHT + 100:
