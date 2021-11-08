@@ -20,12 +20,26 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 clock = pygame.time.Clock()
 
-player = Player(pygame, screen)
+player = Player(screen)
 
 shot_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 
-x = 1
+wave = 0
+waves = {
+    0: 5,
+    500: 10,
+    1000: 20,
+    1500: 40
+}
+
+
+def test(shot, enemy):
+    if enemy.rect.colliderect(shot.rect):
+        enemy.take_damage(shot.damage)
+        return True
+    return False
+
 
 running = True
 while running:
@@ -39,12 +53,20 @@ while running:
             running = False
 
     # update
+    collisions = pygame.sprite.groupcollide(
+        shot_group, enemy_group, True, False, collided=test)
+
     player.update()
     shot_group.update()
-    if x == 1:
-        enemy_group.add(Enemy(player))
-        x += 1
+    if wave in waves:
+        for n in range(waves[wave]):
+            enemy_group.add(Enemy(player))
     enemy_group.update()
+    wave += 1
+    print(wave)
+    if player.is_dead():
+        print("YOU HAVE DIED")
+        running = False
 
     # draw
     screen.fill((0, 0, 0))
@@ -53,7 +75,6 @@ while running:
                               (player.surf.get_height() // 2)))
     shot_group.draw(screen)
     enemy_group.draw(screen)
-
     pygame.display.flip()
     clock.tick(75)
 
