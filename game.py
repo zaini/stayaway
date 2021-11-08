@@ -9,6 +9,7 @@ from pygame.locals import (
     QUIT,
 )
 from player import Player
+from enemy import Enemy
 
 pygame.init()
 
@@ -22,6 +23,9 @@ clock = pygame.time.Clock()
 player = Player(pygame, screen)
 
 shot_group = pygame.sprite.Group()
+enemy_group = pygame.sprite.Group()
+
+x = 1
 
 running = True
 while running:
@@ -34,15 +38,22 @@ while running:
         elif event.type == pygame.QUIT:
             running = False
 
+    # update
     player.update()
+    shot_group.update()
+    if x == 1:
+        enemy_group.add(Enemy(player))
+        x += 1
+    enemy_group.update()
 
+    # draw
     screen.fill((0, 0, 0))
-
     screen.blit(player.surf, (player.rect.x -
                               (player.surf.get_width() // 2), player.rect.y -
                               (player.surf.get_height() // 2)))
-    shot_group.update()
     shot_group.draw(screen)
+    enemy_group.draw(screen)
+
     pygame.display.flip()
     clock.tick(75)
 
