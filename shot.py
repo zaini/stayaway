@@ -16,12 +16,13 @@ import math
 
 SPEED = 10
 DAMAGE = 30
+SIZE = 10
 
 
 class Shot(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, direction):
         super(Shot, self).__init__()
-        self.image = pygame.Surface((20, 20))
+        self.image = pygame.Surface((SIZE, SIZE))
         self.image.fill((255, 255, 255))
         self.rect = self.image.get_rect(center=(pos_x, pos_y))
         self.direction = direction

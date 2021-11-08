@@ -3,24 +3,30 @@ import math
 
 SPEED = 2
 HEALTH = 100
-DAMAGE = 1
+DAMAGE = 20
+SIZE = 35
 
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, player):
+    def __init__(self, player, x, y):
         super(Enemy, self).__init__()
-        self.image = pygame.Surface((35, 35))
+        self.image = pygame.Surface((SIZE, SIZE))
         self.image.fill((255, 0, 0))
         self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
         self.player = player
         self.health = HEALTH
         self.damage = DAMAGE
+
+    def is_dead(self):
+        return self.health <= 0
 
     def take_damage(self, damage):
         self.health -= damage
 
     def update(self):
-        if self.health <= 0:
+        if self.is_dead():
             self.kill()
 
         dx, dy = self.rect.x - self.player.rect.x, self.rect.y - self.player.rect.y

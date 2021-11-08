@@ -10,9 +10,15 @@ from pygame.locals import (
 )
 from player import Player
 from enemy import Enemy
+import random
 
 pygame.init()
+pygame.font.init()
 
+WAVE_FONT = pygame.font.SysFont('Comic Sans MS', 20)
+DEATH_FONT = pygame.font.SysFont('Comic Sans MS', 30)
+DEATH_TEXT_SURFACE = DEATH_FONT.render(
+    "YOU HAVE DIED", False, (0, 0, 255))
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 700
 
@@ -33,10 +39,15 @@ waves = {
     1500: 40
 }
 
+kills = 0
 
-def test(shot, enemy):
+
+def is_enemy_shot(shot, enemy):
+    global kills
     if enemy.rect.colliderect(shot.rect):
         enemy.take_damage(shot.damage)
+        if enemy.is_dead():
+            kills += 1
         return True
     return False
 
@@ -53,26 +64,40 @@ while running:
             running = False
 
     # update
-    collisions = pygame.sprite.groupcollide(
-        shot_group, enemy_group, True, False, collided=test)
+    if not player.is_dead():
+        collisions = pygame.sprite.groupcollide(
+            shot_group, enemy_group, True, False, collided=is_enemy_shot)
 
-    player.update()
-    shot_group.update()
-    if wave in waves:
-        for n in range(waves[wave]):
-            enemy_group.add(Enemy(player))
-    enemy_group.update()
-    wave += 1
-    print(wave)
-    if player.is_dead():
-        print("YOU HAVE DIED")
-        running = False
+        player.update()
+        shot_group.update()
+        if wave in waves:
+            for n in range(waves[wave]):
+                enemy_group.add(random.choice([Enemy(player, 10, random.randint(10, SCREEN_HEIGHT)),
+                                               Enemy(player, SCREEN_WIDTH - 10,
+                                                     random.randint(10, SCREEN_HEIGHT)),
+                                               Enemy(player, random.randint(
+                                                   10, SCREEN_WIDTH), 10),
+                                               Enemy(player, random.randint(10, SCREEN_WIDTH), SCREEN_HEIGHT - 10)]))
+        enemy_group.update()
+        wave += 1
 
     # draw
     screen.fill((0, 0, 0))
     screen.blit(player.surf, (player.rect.x -
                               (player.surf.get_width() // 2), player.rect.y -
                               (player.surf.get_height() // 2)))
+
+    wave_text_surface = WAVE_FONT.render(
+        "WAVE: {}".format(wave), False, (0, 255, 0))
+    screen.blit(wave_text_surface, (0, 0))
+
+    kills_text_surface = WAVE_FONT.render(
+        "KILLS: {}".format(kills), False, (0, 0, 255))
+    screen.blit(kills_text_surface, (0, wave_text_surface.get_height()))
+    if player.is_dead():
+        screen.blit(DEATH_TEXT_SURFACE, (SCREEN_WIDTH //
+                                         2 - (DEATH_TEXT_SURFACE.get_width() // 2), 0))
+
     shot_group.draw(screen)
     enemy_group.draw(screen)
     pygame.display.flip()
