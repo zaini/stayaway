@@ -38,12 +38,12 @@ class Player(pygame.sprite.Sprite):
     def take_damage(self, damage):
         self.health = max(0, self.health - damage)
 
-    def create_shot(self):
+    def create_shot(self, offset_angle=0, size=10, damage=30, speed=10):
         mouse_x, mouse_y = pygame.mouse.get_pos()
         dx, dy = mouse_x - self.rect.x, mouse_y - self.rect.y
         dir_vec = pygame.math.Vector2(dx, dy)
         dir_vec.normalize()
-        return Shot(self.rect.x, self.rect.y, dir_vec)
+        return Shot(self.rect.x, self.rect.y, dir_vec, offset_angle=offset_angle, size=size, speed=speed, damage=damage)
 
     """Returns angle to mouse in degrees"""
 

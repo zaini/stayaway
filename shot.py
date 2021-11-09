@@ -13,24 +13,26 @@ from pygame.locals import (
     QUIT,
 )
 import math
+import random
 
 SPEED = 10
-DAMAGE = 30
-SIZE = 10
 
 
 class Shot(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y, direction):
+    def __init__(self, pos_x, pos_y, direction, offset_angle=0, size=10, damage=50, speed=10):
         super(Shot, self).__init__()
-        self.image = pygame.Surface((SIZE, SIZE))
+        self.image = pygame.Surface((size, size))
         self.image.fill((255, 255, 255))
         self.rect = self.image.get_rect(center=(pos_x, pos_y))
         self.speed = SPEED
         direction.scale_to_length(self.speed)
-        self.direction_vector = direction
-        self.damage = DAMAGE
+        self.direction_vector = direction.rotate(offset_angle)
+        self.damage = damage
 
     def update(self):
+        self.image.fill((random.randint(0, 255), random.randint(
+            0, 255), random.randint(0, 255)))
+
         self.rect.move_ip(self.direction_vector)
         SCREEN_WIDTH, SCREEN_HEIGHT = pygame.display.get_surface().get_size()
 

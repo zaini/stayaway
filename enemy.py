@@ -2,7 +2,7 @@ import pygame
 import math
 
 SPEED = 2
-HEALTH = 100
+HEALTH = 500
 DAMAGE = 5
 SIZE = 80
 

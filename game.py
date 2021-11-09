@@ -66,6 +66,7 @@ def is_enemy_shot(shot, enemy):
 
 
 shooting = False
+triple_shot = False
 
 running = True
 while running:
@@ -75,8 +76,13 @@ while running:
                 running = False
             elif event.key == pygame.K_SPACE:
                 player.dash()
+            elif event.key == pygame.K_q:
+                triple_shot = not triple_shot
         elif event.type == pygame.MOUSEBUTTONDOWN:
             shooting = True
+            if not triple_shot:
+                shot_group.add(player.create_shot(
+                    size=30, damage=300, speed=30))
         elif event.type == pygame.MOUSEBUTTONUP:
             shooting = False
         elif event.type == pygame.QUIT:
@@ -84,8 +90,10 @@ while running:
 
     # update
     if not player.is_dead():
-        if shooting:
+        if triple_shot and shooting:
             shot_group.add(player.create_shot())
+            shot_group.add(player.create_shot(offset_angle=-20))
+            shot_group.add(player.create_shot(offset_angle=20))
 
         collisions = pygame.sprite.groupcollide(
             shot_group, enemy_group, True, False, collided=is_enemy_shot)
