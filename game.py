@@ -17,11 +17,12 @@ pygame.init()
 pygame.font.init()
 
 WAVE_FONT = pygame.font.SysFont('Comic Sans MS', 20)
+HEALTH_FONT = pygame.font.SysFont('Comic Sans MS', 20)
 DEATH_FONT = pygame.font.SysFont('Comic Sans MS', 30)
 DEATH_TEXT_SURFACE = DEATH_FONT.render(
     "YOU HAVE DIED", False, (0, 0, 255))
-SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 700
+SCREEN_WIDTH = 1600
+SCREEN_HEIGHT = 800
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
@@ -53,24 +54,18 @@ def is_enemy_shot(shot, enemy):
         else:
             dy = enemy.rect.center[1] - shot.rect.center[1]
             dx = enemy.rect.center[0] - shot.rect.center[0]
-            angle = math.atan2(dy, dx)
-            dx = math.cos(angle)
-            dy = math.cos(math.pi/2 - angle)
 
-            if dx >= 0:
-                dx = dx * KNOCKBACK_DISTANCE - enemy.rect.width // 2
-            else:
-                dx = dx * KNOCKBACK_DISTANCE + enemy.rect.width // 2
+            dirvect = pygame.math.Vector2(dx, dy)
+            if dy != 0:
+                dirvect.normalize()
+                dirvect.scale_to_length(KNOCKBACK_DISTANCE)
+                enemy.rect.move_ip(dirvect)
 
-            if dy >= 0:
-                dy = dy * KNOCKBACK_DISTANCE - enemy.rect.height // 2
-            else:
-                dy = dy * KNOCKBACK_DISTANCE + enemy.rect.height // 2
-
-            enemy.rect.move_ip(dx, dy)
         return True
     return False
 
+
+shooting = False
 
 running = True
 while running:
@@ -78,13 +73,20 @@ while running:
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 running = False
+            elif event.key == pygame.K_SPACE:
+                player.dash()
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            shot_group.add(player.create_shot())
+            shooting = True
+        elif event.type == pygame.MOUSEBUTTONUP:
+            shooting = False
         elif event.type == pygame.QUIT:
             running = False
 
     # update
     if not player.is_dead():
+        if shooting:
+            shot_group.add(player.create_shot())
+
         collisions = pygame.sprite.groupcollide(
             shot_group, enemy_group, True, False, collided=is_enemy_shot)
 
@@ -108,9 +110,17 @@ while running:
                               (player.surf.get_width() // 2), player.rect.y -
                               (player.surf.get_height() // 2)))
 
+    shot_group.draw(screen)
+    enemy_group.draw(screen)
+
     wave_text_surface = WAVE_FONT.render(
         "WAVE: {}".format(wave), False, (0, 255, 0))
     screen.blit(wave_text_surface, (0, 0))
+
+    health_text_surface = HEALTH_FONT.render(
+        "HEALTH: {}".format((player.health / player.max_health) * 100), False, (0, 255, 0))
+    screen.blit(health_text_surface, (0, SCREEN_HEIGHT -
+                                      health_text_surface.get_height()))
 
     kills_text_surface = WAVE_FONT.render(
         "KILLS: {}".format(kills), False, (0, 0, 255))
@@ -119,8 +129,6 @@ while running:
         screen.blit(DEATH_TEXT_SURFACE, (SCREEN_WIDTH //
                                          2 - (DEATH_TEXT_SURFACE.get_width() // 2), 0))
 
-    shot_group.draw(screen)
-    enemy_group.draw(screen)
     pygame.display.flip()
     clock.tick(75)
 

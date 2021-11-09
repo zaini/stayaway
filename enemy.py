@@ -3,21 +3,23 @@ import math
 
 SPEED = 2
 HEALTH = 100
-DAMAGE = 20
-SIZE = 35
+DAMAGE = 5
+SIZE = 80
 
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, player, x, y):
         super(Enemy, self).__init__()
-        self.image = pygame.Surface((SIZE, SIZE))
-        self.image.fill((255, 0, 0))
+        self.image = pygame.image.load("./assets/enemy.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (SIZE, SIZE))
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.player = player
         self.health = HEALTH
         self.damage = DAMAGE
+        self.speed = SPEED
 
     def is_dead(self):
         return self.health <= 0
@@ -30,11 +32,13 @@ class Enemy(pygame.sprite.Sprite):
             self.kill()
 
         dx, dy = self.rect.x - self.player.rect.x, self.rect.y - self.player.rect.y
-        if dx != 0:
-            dx = dx/abs(dx)
+        dirvect = pygame.math.Vector2(-dx, -dy)
         if dy != 0:
-            dy = dy/abs(dy)
-        self.rect.move_ip(-dx * SPEED, -dy * SPEED)
+            dirvect.normalize()
+            dirvect.scale_to_length(self.speed)
+            self.rect.move_ip(dirvect)
 
-        if self.player.rect.colliderect(self):
+        if pygame.sprite.collide_mask(self, self.player):
             self.player.take_damage(self.damage)
+
+        self.rect.clamp_ip(self.player.screen.get_rect())
